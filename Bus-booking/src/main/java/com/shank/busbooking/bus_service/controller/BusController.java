@@ -1,8 +1,8 @@
-package com.shank.busbooking.bus_service.contrtoller;
+package com.shank.busbooking.bus_service.controller;
 
-import com.shank.busbooking.bus_service.dto.BusRequest;
-import com.shank.busbooking.bus_service.dto.BusResponse;
-import com.shank.busbooking.bus_service.service.BusService;
+import com.shank.busbooking.dto.BusRequest;
+import com.shank.busbooking.dto.BusResponse;
+import com.shank.busbooking.service.BusService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class BusController {
     public BusController(BusService busService){
         this.busService = busService;
     }
-    @PostMapping("/createBus")
+    @PostMapping({"", "/createBus"})
     public ResponseEntity<BusResponse> createBus(
             @Valid @RequestBody BusRequest request){
         BusResponse response = busService.createBus(request);
@@ -41,7 +41,7 @@ public class BusController {
 
     // ===== [AI GENERATED] =====
     // Fix 1: no path variable needed; returns a List because there can be many buses.
-    @GetMapping("/getAllBus")
+    @GetMapping({"", "/getAllBus"})
     public ResponseEntity<List<BusResponse>> getAllBuses(){
         return ResponseEntity.ok(busService.getAllBuses());
     }
