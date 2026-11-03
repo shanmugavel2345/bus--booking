@@ -1,0 +1,40 @@
+{
+  "info": {
+    "name": "Bus Booking - Seat Lifecycle",
+    "description": "Run in order on disposable local data. Start all five services. For failure, restart Payment with PAYMENT_SIMULATION_SUCCESS=false and run again with a fresh booking. Never send the internal service token from React.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "busId", "value": ""},
+    {"key": "bookingId", "value": ""},
+    {"key": "paymentId", "value": ""},
+    {"key": "journeyDate", "value": ""}
+  ],
+  "event": [{"listen": "prerequest", "script": {"type": "text/javascript", "exec": [
+    "if (!pm.collectionVariables.get('journeyDate')) { const date = new Date(); date.setUTCDate(date.getUTCDate() + 5); pm.collectionVariables.set('journeyDate', date.toISOString().slice(0, 10)); }"
+  ]}}],
+  "item": [
+    {
+      "name": "1 Create bus",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/api/buses", "body": {"mode": "raw", "raw": "{\"busName\":\"Seat Express\",\"busNumber\":\"PM-{{$guid}}\",\"source\":\"Chennai\",\"destination\":\"Madurai\",\"totalSeates\":4,\"fare\":123.45}"}},
+      "event": [{"listen": "test", "script": {"exec": ["pm.test('Created', () => pm.response.to.have.status(201)); pm.collectionVariables.set('busId', pm.response.json().id);"]}}]
+    },
+    {
+      "name": "2 Create selected-seat booking",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/api/bookings", "body": {"mode": "raw", "raw": "{\"busId\":{{busId}},\"passengerName\":\"Test Passenger\",\"passengerEmail\":\"test@example.com\",\"passengerPhone\":\"1234567890\",\"journeyDate\":\"{{journeyDate}}\",\"numberOfSeats\":2,\"seatNumbers\":[\"S1\",\"S2\"]}"}},
+      "event": [{"listen": "test", "script": {"exec": ["pm.test('Held', () => { pm.response.to.have.status(201); pm.expect(pm.response.json().bookingStatus).to.eql('PENDING_PAYMENT'); }); pm.collectionVariables.set('bookingId', pm.response.json().id);"]}}]
+    },
+    {"name": "3 Available seats", "request": {"method": "GET", "url": "{{baseUrl}}/api/seats/bus/{{busId}}/available?journeyDate={{journeyDate}}"}},
+    {"name": "4 Reserved seats for booking", "request": {"method": "GET", "url": "{{baseUrl}}/api/seats/booking/{{bookingId}}"}},
+    {
+      "name": "5 Simulate payment",
+      "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "url": "{{baseUrl}}/api/payments", "body": {"mode": "raw", "raw": "{\"bookingId\":{{bookingId}},\"paymentMethod\":\"UPI\"}"}},
+      "event": [{"listen": "test", "script": {"exec": ["pm.test('Outcome saved', () => pm.response.to.have.status(201)); pm.collectionVariables.set('paymentId', pm.response.json().id);"]}}]
+    },
+    {"name": "6 Booking outcome", "request": {"method": "GET", "url": "{{baseUrl}}/api/bookings/{{bookingId}}"}},
+    {"name": "7 Idempotent outcome notification", "request": {"method": "POST", "url": "{{baseUrl}}/api/payments/{{paymentId}}/notify-booking"}},
+    {"name": "8 Cancel booking", "request": {"method": "PUT", "url": "{{baseUrl}}/api/bookings/{{bookingId}}/cancel"}},
+    {"name": "9 All seats after cancellation", "request": {"method": "GET", "url": "{{baseUrl}}/api/seats/bus/{{busId}}?journeyDate={{journeyDate}}"}}
+  ]
+}

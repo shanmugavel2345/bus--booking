@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS booking ALTER COLUMN booking_status VARCHAR(32);

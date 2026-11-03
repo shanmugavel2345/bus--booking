@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/booking")
+@RequestMapping({"/api/booking", "/api/bookings"})
 public class BookingController {
     private final BookingService service;
 
@@ -17,13 +17,13 @@ public class BookingController {
         this.service = service;
     }
 
-    @PostMapping("/createBooking")
+    @PostMapping({"", "/createBooking"})
     @ResponseStatus(HttpStatus.CREATED)
     public BookingResponse create(@Valid @RequestBody BookingRequest request) {
         return service.create(request);
     }
 
-    @GetMapping("/getAllBookings")
+    @GetMapping({"", "/getAllBookings"})
     public List<BookingResponse> findAll() {
         return service.findAll();
     }

@@ -1,0 +1,1 @@
+ALTER TABLE IF EXISTS payments ALTER COLUMN payment_status VARCHAR(32);

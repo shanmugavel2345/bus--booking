@@ -17,6 +17,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> downstream(
+            org.springframework.web.server.ResponseStatusException exception) {
+        return response(HttpStatus.valueOf(exception.getStatusCode().value()), exception.getReason(), null);
+    }
+
     @ExceptionHandler(BookingNotFoundException.class)
     public ResponseEntity<Map<String, Object>> notFound(BookingNotFoundException exception) {
         return response(HttpStatus.NOT_FOUND, exception.getMessage(), null);

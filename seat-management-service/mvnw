@@ -1,0 +1,3 @@
+#!/bin/sh
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec sh "$script_dir/../booking-service/mvnw" -f "$script_dir/pom.xml" "$@"
